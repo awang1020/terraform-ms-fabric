@@ -1,0 +1,33 @@
+	1. Se connecter
+az login --use-device-id
+az login 
+    1a. associer le bon abonnement 
+az account set --subscription "soucriptionid"
+az account set --subscription "9c4b37e9-95f8-4e09-9e1e-452d0d5b7f7e"
+    2. Créer un dossier terraform, il va contenir toute les fichiers de configuration
+New-Item -Path "c:\" -Name "learn-terraform-azure" -ItemType "directory"
+	
+    3. Créer un fichier terraform
+vim main.tf
+	
+    4. Initialiser terraform
+terraform init
+    4b. Voir les modifications
+terraform plan
+    
+    4b. Format and validate the configuration 
+terraform fmt
+terraform validate
+
+    4c. Déployer
+terraform apply
+
+	5. Inspecte : 
+terraform show
+terraform state list
+
+    6. Supprimer la configuration terraform
+terraform destroy
+ 
+    7. Interroger les sorties, afficher ou exposer des informations une fois qu'une infrastructure a été provisionnée
+ terraform output resource_group_id

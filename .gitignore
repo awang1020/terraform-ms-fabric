@@ -1,0 +1,9 @@
+# Ignore Terraform directories and state files
+.terraform/            # Répertoire des plugins Terraform
+*.tfstate              # Fichiers d'état Terraform
+*.tfstate.*            # Sauvegardes ou versions des fichiers d'état
+crash.log              # Fichier de logs en cas de plantage
+*.tfvars               # Fichiers contenant des variables sensibles
+override.tf            # Fichiers d'override spécifiques
+override.tf.json       # Fichiers JSON d'override spécifiques
+.terraform.lock.hcl    # Fichier de verrouillage des plugins Terraform
