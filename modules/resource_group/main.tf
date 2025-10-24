@@ -4,6 +4,15 @@
 # that hosts Microsoft Fabric assets.
 ###############################################
 
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+    }
+  }
+}
+
+
 # Input variables are defined in variables.tf within this module.
 
 # Create the Azure resource group that will contain the Fabric resources.

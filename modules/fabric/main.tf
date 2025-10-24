@@ -4,25 +4,35 @@
 # specified resource group and assigns administrators.
 ###############################################
 
-# Create a Microsoft Fabric capacity using the AzAPI provider.
-resource "azapi_resource" "capacity" {
-  type                      = "Microsoft.Fabric/capacities@2023-11-01"
-  name                      = var.capacity_name
-  parent_id                 = var.resource_group_id
-  location                  = var.location
-  schema_validation_enabled = false
-
-  body = {
-    sku = {
-      name = var.capacity_sku
-      tier = "Fabric"
+terraform {
+  required_providers {
+    fabric = {
+      source = "microsoft/fabric"
     }
-    properties = {
-      administration = {
-        members = var.administrator_upns
-      }
+    azapi = {
+      source = "azure/azapi"
     }
   }
+}
+
+
+
+
+# Create a Microsoft Fabric capacity using the AzAPI provider.
+resource "azurerm_fabric_capacity" "this" {
+  name                = var.capacity_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  sku_name            = {
+    name = var.capacity_sku
+    tier = "Fabric"
+  }
+
+  administration {
+    members = var.administrator_upns
+  }
+
+  tags = var.tags
 }
 
 # Retrieve the Fabric capacity information once provisioned.

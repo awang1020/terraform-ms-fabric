@@ -31,3 +31,9 @@ variable "administrator_upns" {
   description = "List of Fabric administrator user principal names."
   type        = list(string)
 }
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "Tags communs appliqués à la ressource"
+}
