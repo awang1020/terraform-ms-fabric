@@ -1,0 +1,8 @@
+# Example variable file for deploying Microsoft Fabric resources.
+# Replace the placeholder values with your environment specific details
+# before copying this file to terraform.tfvars (which is ignored by Git).
+
+name            = "my-fabric-demo"
+location        = "francecentral"
+fabric_capacity_sku = "F2"
+subscription_id = "00000000-0000-0000-0000-000000000000"

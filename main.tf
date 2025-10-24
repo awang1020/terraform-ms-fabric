@@ -1,53 +1,44 @@
-# Access the client configuration of the AzureRM provider.
-# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config
-data "azurerm_client_config" "example" {}
+############################################################
+# Root module for Microsoft Fabric infrastructure deployment
+# This configuration wires together supporting modules and
+# data sources to provision a resource group, Fabric capacity,
+# and workspace following recommended practices.
+############################################################
 
-# Gets information about Entra user.
-# https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/data-sources/user
-data "azuread_user" "example" {
-  object_id = data.azurerm_client_config.example.object_id
+# -----------------------------------------------------------------------------
+# Discover details about the currently authenticated Azure client.
+# This is used to infer defaults such as the administrator account.
+# -----------------------------------------------------------------------------
+data "azurerm_client_config" "current" {}
+
+# -----------------------------------------------------------------------------
+# Resolve the Azure AD user principal for the signed-in identity so the
+# workspace administration can be automatically assigned.
+# -----------------------------------------------------------------------------
+data "azuread_user" "current" {
+  object_id = data.azurerm_client_config.current.object_id
 }
 
-# Create a resource group.
-# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
-resource "azurerm_resource_group" "example" {
+# -----------------------------------------------------------------------------
+# Provision the resource group hosting all Microsoft Fabric resources.
+# -----------------------------------------------------------------------------
+module "resource_group" {
+  source   = "./modules/resource_group"
   name     = "rg-${var.name}"
   location = var.location
 }
 
-# Create a Fabric Capacity.
-# https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/azapi_resource
-resource "azapi_resource" "fabric_capacity_example" {
-  type                      = "Microsoft.Fabric/capacities@2023-11-01"
-  name                      = "fc${var.name}"
-  parent_id                 = azurerm_resource_group.example.id
-  location                  = var.location
-  schema_validation_enabled = false
-
-  body = {
-    sku = {
-      name = var.fabric_capacity_sku
-      tier = "Fabric"
-    }
-    properties = {
-      administration = {
-        members = [
-          data.azuread_user.example.user_principal_name
-        ]
-      }
-    }
-  }
-}
-
-# Get the Fabric Capacity details.
-# https://registry.terraform.io/providers/microsoft/fabric/latest/docs/data-sources/capacity
-data "fabric_capacity" "example" {
-  display_name = azapi_resource.fabric_capacity_example.name
-}
-
-# Create a Fabric Workspace.
-# https://registry.terraform.io/providers/microsoft/fabric/latest/docs/resources/workspace
-resource "fabric_workspace" "example" {
-  capacity_id  = data.fabric_capacity.example.id
-  display_name = "ws-${var.name}"
+# -----------------------------------------------------------------------------
+# Deploy the Microsoft Fabric capacity and workspace resources.
+# -----------------------------------------------------------------------------
+module "fabric" {
+  source            = "./modules/fabric"
+  capacity_name     = "fc${var.name}"
+  workspace_name    = "ws-${var.name}"
+  location          = var.location
+  capacity_sku      = var.fabric_capacity_sku
+  resource_group_id = module.resource_group.id
+  administrator_upns = [
+    data.azuread_user.current.user_principal_name,
+  ]
 }

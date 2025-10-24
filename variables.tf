@@ -1,23 +1,25 @@
+############################################################
+# Root module variable definitions
+############################################################
+
 variable "name" {
-  description = "Name of the solution"
+  description = "Project suffix used when naming Fabric resources."
   type        = string
 }
 
-# Modify the location if needed - RGPD 
 variable "location" {
-  description = "Location of the Azure resources"
+  description = "Azure region where the infrastructure is deployed."
   type        = string
   default     = "francecentral"
 }
 
-# Modify the size if needed - F64 for premium 
 variable "fabric_capacity_sku" {
-  description = "Fabric Capacity SKU name"
+  description = "Fabric capacity SKU size (for example, F2, F4, F8)."
   type        = string
   default     = "F2"
 }
 
 variable "subscription_id" {
-  description = "The Azure subscription ID"
+  description = "Azure subscription identifier used by the providers."
   type        = string
 }
