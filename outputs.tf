@@ -16,7 +16,7 @@ output "fabric_workspace" {
 
 # Resource group reference for integration with other stacks.
 output "resource_group" {
-  value       = {
+  value = {
     id   = module.resource_group.id
     name = module.resource_group.name
   }
