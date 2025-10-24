@@ -62,8 +62,56 @@ data "azuread_user" "admins" {
 locals {}
 
 # Assign Admin role within the Fabric workspace to administrators.
-## Note: Workspace Admin role assignment intentionally omitted to avoid
-## duplicate-assignment errors since creators are already Admin by default.
+## Group role assignments per workspace (optional)
+locals {
+  group_names_for_lookup = toset([
+    for a in var.workspace_group_assignments : a.group_display_name
+    if try(a.group_object_id, "") == "" && try(a.group_display_name, "") != ""
+  ])
+}
+
+data "azuread_group" "groups_by_name" {
+  for_each     = local.group_names_for_lookup
+  display_name = each.key
+}
+
+locals {
+  all_workspace_names = keys(fabric_workspace.this)
+
+  group_assignment_expanded = flatten([
+    for a in var.workspace_group_assignments : [
+      for ws_name in (length(try(a.workspaces, [])) > 0 ? a.workspaces : local.all_workspace_names) : {
+        key            = "${ws_name}:${coalesce(try(a.group_display_name, null), try(a.group_object_id, null))}:${lower(a.role)}"
+        workspace_name = ws_name
+        role           = a.role
+        group_name     = try(a.group_display_name, null)
+        group_object_id = try(a.group_object_id, null)
+      }
+    ]
+  ])
+
+  group_assignment_map = {
+    for g in local.group_assignment_expanded :
+    g.key => {
+      workspace_id = fabric_workspace.this[g.workspace_name].id
+      role         = g.role
+      principal_id = coalesce(
+        g.group_object_id,
+        try(data.azuread_group.groups_by_name[g.group_name].object_id, null)
+      )
+    }
+  }
+}
+
+resource "fabric_workspace_role_assignment" "groups" {
+  for_each    = local.group_assignment_map
+  workspace_id = each.value.workspace_id
+  role         = each.value.role
+  principal = {
+    id   = each.value.principal_id
+    type = "Group"
+  }
+}
 
 # Expose useful outputs to calling modules.
 output "capacity" {

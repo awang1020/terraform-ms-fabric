@@ -64,6 +64,8 @@ module "fabric" {
   capacity_sku        = var.fabric_capacity_sku
   resource_group_name = module.resource_group.name
   administrator_upns  = local.administrator_upns
+  # Optional: assign groups to workspaces via terraform.tfvars
+  workspace_group_assignments = var.workspace_group_assignments
 }
 
 # Resolve Azure AD objects for each administrator UPN.
