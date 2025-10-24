@@ -7,3 +7,11 @@ environment         = "dev"   # dev | test | prod
 location            = "francecentral"
 fabric_capacity_sku = "F2"
 subscription_id     = "00000000-0000-0000-0000-000000000000"
+
+workspace_group_assignments = [
+    {
+        group_object_id    = "groupeAD_ID"
+        role               = "Contributor"
+        workspaces         = ["workspace_name1", "workspace_name2"]
+    }
+]
