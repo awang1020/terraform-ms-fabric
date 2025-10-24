@@ -13,6 +13,62 @@ Ce dépôt fournit une configuration Terraform modulaire pour déployer rapideme
   - `hashicorp/azuread`
   - `microsoft/fabric`
 
+### Installer Azure CLI sur son poste
+
+#### Windows
+1. Téléchargez le programme d'installation depuis la page officielle : [Azure CLI pour Windows](https://aka.ms/installazurecliwindows).
+2. Exécutez le fichier `.msi` puis suivez l'assistant en conservant les options par défaut.
+3. Ouvrez un nouveau terminal PowerShell et vérifiez l'installation :
+   ```powershell
+   az version
+   ```
+
+#### macOS
+1. Installez Homebrew si ce n'est pas déjà fait : [Instructions officielles](https://brew.sh/index_fr).
+2. Installez Azure CLI via Homebrew :
+   ```bash
+   brew update
+   brew install azure-cli
+   ```
+3. Vérifiez l'installation :
+   ```bash
+   az version
+   ```
+
+#### Linux (Debian/Ubuntu)
+1. Importez la clé Microsoft :
+   ```bash
+   curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+   ```
+2. Vérifiez l'installation :
+   ```bash
+   az version
+   ```
+
+> Pour d'autres distributions, consultez la [documentation officielle](https://learn.microsoft.com/cli/azure/install-azure-cli) qui détaille les paquets disponibles.
+
+### Authentification à Azure
+1. Ouvrez un terminal et exécutez :
+   ```bash
+   az login
+   ```
+2. Un navigateur s'ouvre : connectez-vous avec votre compte Azure disposant des droits nécessaires.
+3. Pour les environnements sans interface graphique, utilisez :
+   ```bash
+   az login --use-device-code
+   ```
+   puis suivez les instructions affichées dans le terminal.
+4. Vérifiez le compte actif :
+   ```bash
+   az account show --output table
+   ```
+5. Si plusieurs abonnements sont disponibles, sélectionnez celui à utiliser avec :
+   ```bash
+   az account set --subscription "<nom-ou-id-de-l-abonnement>"
+   ```
+
+> Les identifiants enregistrés par `az login` seront utilisés automatiquement par Terraform via les providers Azure.
+
 ## 🗂️ Structure du dépôt
 ```
 .
