@@ -2,9 +2,22 @@
 # Root module variable definitions
 ############################################################
 
-variable "name" {
-  description = "Project suffix used when naming Fabric resources."
+variable "client" {
+  description = "Client or tenant identifier used as the naming prefix (lowercase letters, numbers, hyphens)."
   type        = string
+  validation {
+    condition     = can(regex("^[a-z0-9-]+$", var.client))
+    error_message = "client must contain only lowercase letters, numbers, and hyphens."
+  }
+}
+
+variable "environment" {
+  description = "Deployment environment suffix (dev, test, or prod)."
+  type        = string
+  validation {
+    condition     = contains(["dev", "test", "prod"], lower(var.environment))
+    error_message = "environment must be one of: dev, test, prod."
+  }
 }
 
 variable "location" {

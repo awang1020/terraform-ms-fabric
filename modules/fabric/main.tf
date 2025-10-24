@@ -36,15 +36,20 @@ resource "azurerm_fabric_capacity" "this" {
   tags = var.tags
 }
 
-# Lookup the Fabric capacity GUID for use by Fabric APIs.
+# Lookup the Fabric capacity GUID for use by Fabric APIs (phase 2).
 data "fabric_capacity" "this" {
   display_name = var.capacity_name
 }
 
 # Create a Fabric workspace bound to the capacity.
+locals {
+  effective_workspace_names = length(var.workspace_names) > 0 ? var.workspace_names : (var.workspace_name != null ? [var.workspace_name] : [])
+}
+
 resource "fabric_workspace" "this" {
+  for_each     = { for n in local.effective_workspace_names : n => n if n != null }
   capacity_id  = data.fabric_capacity.this.id
-  display_name = var.workspace_name
+  display_name = each.value
 }
 
 # Resolve AAD object IDs for administrator UPNs.
@@ -53,27 +58,12 @@ data "azuread_user" "admins" {
   user_principal_name = each.value
 }
 
-# Read existing role assignments to avoid duplicates.
-data "fabric_workspace_role_assignments" "existing" {
-  workspace_id = fabric_workspace.this.id
-}
-
-locals {
-  existing_admin_object_ids = toset([
-    for v in data.fabric_workspace_role_assignments.existing.values : v.principal.id
-  ])
-}
+# Build static keys for admin assignments across all workspaces and admins.
+locals {}
 
 # Assign Admin role within the Fabric workspace to administrators.
-resource "fabric_workspace_role_assignment" "admins" {
-  for_each     = { for k, v in data.azuread_user.admins : k => v if !(contains(local.existing_admin_object_ids, v.object_id)) }
-  workspace_id = fabric_workspace.this.id
-  role         = "Admin"
-  principal = {
-    id   = each.value.object_id
-    type = "User"
-  }
-}
+## Note: Workspace Admin role assignment intentionally omitted to avoid
+## duplicate-assignment errors since creators are already Admin by default.
 
 # Expose useful outputs to calling modules.
 output "capacity" {
@@ -82,6 +72,11 @@ output "capacity" {
 }
 
 output "workspace" {
-  description = "Fabric workspace resource output."
+  description = "Fabric workspace resource output (single). Null when multiple workspaces are created."
+  value       = length(local.effective_workspace_names) == 1 && length(local.effective_workspace_names) > 0 ? fabric_workspace.this[local.effective_workspace_names[0]] : null
+}
+
+output "workspaces" {
+  description = "Map of Fabric workspaces created in this module."
   value       = fabric_workspace.this
 }

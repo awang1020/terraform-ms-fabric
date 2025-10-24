@@ -21,6 +21,23 @@ data "azuread_user" "current" {
 
 # Centralize administrator UPNs for reuse across modules/resources.
 locals {
+  # Normalize client/env to lowercase hyphenated slugs
+  client_slug = lower(var.client)
+  env_slug    = lower(var.environment)
+
+  # Build an alphanumeric-only capacity name that starts with a letter
+  # and stays within 63 characters as required by the provider.
+  capacity_base     = "${replace(local.client_slug, "-", "")}fabriccapacity${local.env_slug}"
+  capacity_name_pre = substr(lower(local.capacity_base), 0, 63)
+  capacity_name     = can(regex("^[a-z].*", local.capacity_name_pre)) ? local.capacity_name_pre : "f${substr(local.capacity_name_pre, 0, 62)}"
+
+  # Standard names across resources
+  names = {
+    resource_group = "${local.client_slug}-fabric-rg-${local.env_slug}"
+    capacity       = local.capacity_name
+    workspace      = "${local.client_slug}-fabric-workspace-${local.env_slug}"
+  }
+
   administrator_upns = [
     data.azuread_user.current.user_principal_name,
   ]
@@ -31,7 +48,7 @@ locals {
 # -----------------------------------------------------------------------------
 module "resource_group" {
   source   = "./modules/resource_group"
-  name     = "rg-${var.name}"
+  name     = local.names.resource_group
   location = var.location
 }
 
@@ -39,9 +56,10 @@ module "resource_group" {
 # Deploy the Microsoft Fabric capacity and workspace resources.
 # -----------------------------------------------------------------------------
 module "fabric" {
-  source              = "./modules/fabric"
-  capacity_name       = "fc${var.name}"
-  workspace_name      = "ws-${var.name}"
+  source        = "./modules/fabric"
+  capacity_name = local.names.capacity
+  # Create three workspaces on the same capacity
+  workspace_names     = [for n in ["DEV", "TEST", "PROD"] : "${local.client_slug}-${n}"]
   location            = var.location
   capacity_sku        = var.fabric_capacity_sku
   resource_group_name = module.resource_group.name

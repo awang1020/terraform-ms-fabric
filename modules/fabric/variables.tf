@@ -8,8 +8,15 @@ variable "capacity_name" {
 }
 
 variable "workspace_name" {
-  description = "Display name for the Microsoft Fabric workspace."
+  description = "Display name for the Microsoft Fabric workspace. Used when `workspace_names` is not set."
   type        = string
+  default     = null
+}
+
+variable "workspace_names" {
+  description = "List of Fabric workspace display names to create on the same capacity. If provided, supersedes `workspace_name`."
+  type        = list(string)
+  default     = []
 }
 
 variable "location" {

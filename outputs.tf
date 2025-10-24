@@ -14,6 +14,12 @@ output "fabric_workspace" {
   description = "Metadata describing the deployed Fabric workspace."
 }
 
+# Map of created Fabric workspaces (when multiple are created).
+output "fabric_workspaces" {
+  value       = module.fabric.workspaces
+  description = "Map of Fabric workspaces created on the capacity."
+}
+
 # Resource group reference for integration with other stacks.
 output "resource_group" {
   value = {
