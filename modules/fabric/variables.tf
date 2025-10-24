@@ -22,8 +22,8 @@ variable "capacity_sku" {
   type        = string
 }
 
-variable "resource_group_id" {
-  description = "Resource group identifier where the capacity will reside."
+variable "resource_group_name" {
+  description = "Name of the resource group where the capacity will reside."
   type        = string
 }
 
