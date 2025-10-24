@@ -16,6 +16,7 @@ terraform.tfvars
 # CLI configuration files
 .terraformrc
 terraform.rc
+.terraform.lock.hcl
 
 # Module and provider directories
 .terraform/
