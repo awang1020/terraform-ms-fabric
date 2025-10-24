@@ -1,9 +1,26 @@
-# Ignore Terraform directories and state files
-.terraform/            # Répertoire des plugins Terraform
-*.tfstate              # Fichiers d'état Terraform
-*.tfstate.*            # Sauvegardes ou versions des fichiers d'état
-crash.log              # Fichier de logs en cas de plantage
-*.tfvars               # Fichiers contenant des variables sensibles
-override.tf            # Fichiers d'override spécifiques
-override.tf.json       # Fichiers JSON d'override spécifiques
-.terraform.lock.hcl    # Fichier de verrouillage des plugins Terraform
+# Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Ignore Terraform plan files
+*.tfplan
+
+# Local variable overrides
+terraform.tfvars
+*.auto.tfvars
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+# Module and provider directories
+.terraform/
+
+# IDE/editor specific files
+.vscode/
+.idea/
+.DS_Store
