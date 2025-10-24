@@ -37,7 +37,7 @@ module "fabric" {
   workspace_name    = "ws-${var.name}"
   location          = var.location
   capacity_sku      = var.fabric_capacity_sku
-  resource_group_id = module.resource_group.id
+  resource_group_name = module.resource_group.name
   administrator_upns = [
     data.azuread_user.current.user_principal_name,
   ]

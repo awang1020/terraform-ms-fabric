@@ -9,8 +9,8 @@ terraform {
     fabric = {
       source = "microsoft/fabric"
     }
-    azapi = {
-      source = "azure/azapi"
+    azurerm = {
+      source = "hashicorp/azurerm"
     }
   }
 }
@@ -35,21 +35,16 @@ resource "azurerm_fabric_capacity" "this" {
   tags = var.tags
 }
 
-# Retrieve the Fabric capacity information once provisioned.
-data "fabric_capacity" "this" {
-  display_name = azapi_resource.capacity.name
-}
-
 # Create a Fabric workspace bound to the capacity.
 resource "fabric_workspace" "this" {
-  capacity_id  = data.fabric_capacity.this.id
+  capacity_id  = azurerm_fabric_capacity.this.id
   display_name = var.workspace_name
 }
 
 # Expose useful outputs to calling modules.
 output "capacity" {
   description = "Fabric capacity details including identifiers."
-  value       = data.fabric_capacity.this
+  value       = azurerm_fabric_capacity.this
 }
 
 output "workspace" {
