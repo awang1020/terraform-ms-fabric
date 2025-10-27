@@ -60,3 +60,22 @@ variable "enable_schemas" {
   type        = bool
   default     = true
 }
+
+# Artifact naming usage tokens for DEV workspace artifacts
+variable "artifacts_dataflow_usage" {
+  description = "Usage token for Dataflow name (pattern: dataflow_<usage>_<workspace>)."
+  type        = string
+  default     = "ingest"
+}
+
+variable "artifacts_pipeline_usage" {
+  description = "Usage token for Data Pipeline name (pattern: data_pipeline_<usage>_<workspace>)."
+  type        = string
+  default     = "orchestrate"
+}
+
+variable "artifacts_notebook_usage" {
+  description = "Usage token for Notebook name (pattern: notebook_<usage>_<workspace>)."
+  type        = string
+  default     = "explore"
+}
