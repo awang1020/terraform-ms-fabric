@@ -107,7 +107,7 @@ Ce dépôt fournit une configuration Terraform modulaire pour déployer rapideme
   - Object: `{ group_object_id (opt), group_display_name (opt), role (string), workspaces (list(string), opt) }`.
   - If `workspaces` is empty, applies to all created workspaces.
 
-Example tfvars
+
 Copiez `terraform.tfvars.example` vers `terraform.tfvars` et adaptez les valeurs :
 ```hcl
 client              = "acme"                  # string, required
