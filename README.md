@@ -1,14 +1,5 @@
 # Microsoft Fabric Terraform Deployment
 
-## First-Time Apply Note
-- On the first deployment, the Fabric module reads the capacity via data source by display name, which fails until the capacity exists.
-- Run two targeted applies first, then continue normally:
-  - `terraform apply -auto-approve -var-file="terraform.tfvars" -target module.resource_group.azurerm_resource_group.this`
-  - `terraform apply -auto-approve -var-file="terraform.tfvars" -target module.fabric.azurerm_fabric_capacity.this`
-  - `terraform plan -var-file="terraform.tfvars"`
-  - `terraform apply -var-file="terraform.tfvars"`
-- This is only needed once per environment.
-
 ## 🎯 Objectif du projet
 Ce dépôt fournit une configuration Terraform modulaire pour déployer rapidement une infrastructure Microsoft Fabric sur Azure. Il crée un groupe de ressources, une capacité Fabric et un workspace associés afin d'offrir une base prête à l'emploi pour vos projets d'analytics.
 
@@ -101,6 +92,16 @@ fabric_capacity_sku = "F2"
 subscription_id     = "00000000-0000-0000-0000-000000000000"
 ```
 > ⚠️ Ne versionnez jamais votre fichier `terraform.tfvars` contenant des identifiants réels.
+
+## First-Time Apply Note
+- On the first deployment, the Fabric module reads the capacity via data source by display name, which fails until the capacity exists.
+- Run two targeted applies first, then continue normally:
+  - `terraform apply -auto-approve -var-file="terraform.tfvars" -target module.resource_group.azurerm_resource_group.this`
+  - `terraform apply -auto-approve -var-file="terraform.tfvars" -target module.fabric.azurerm_fabric_capacity.this`
+  - `terraform plan -var-file="terraform.tfvars"`
+  - `terraform apply -var-file="terraform.tfvars"`
+- This is only needed once per environment.
+
 
 ## 🚀 Commandes principales
 ```bash
