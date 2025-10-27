@@ -89,6 +89,25 @@ module "lakehouses_dev" {
   enable_schemas = var.enable_schemas
 }
 
+# -----------------------------------------------------------------------------
+# Create core artifacts (Dataflow Gen2, Pipeline, Notebook) in DEV workspace
+# Naming pattern: <service>_<usage>_<workspace_name>
+# -----------------------------------------------------------------------------
+// Note: Dataflow Gen2, Pipeline, and Notebook provisioning via Terraform
+// is not available in the installed microsoft/fabric provider (v1.6.0).
+// Once provider support lands, wire a module here to create those artifacts
+// in the DEV workspace following the naming pattern: <service>_<usage>_<workspace_name>.
+
+# Module now creating Dataflow Gen2, Data Pipeline, and Notebook in DEV workspace
+module "artifacts_dev" {
+  source         = "./modules/artifacts"
+  workspace_id   = module.fabric.workspaces[local.dev_workspace_key].id
+  workspace_name = local.dev_workspace_name
+  dataflow_usage = var.artifacts_dataflow_usage
+  pipeline_usage = var.artifacts_pipeline_usage
+  notebook_usage = var.artifacts_notebook_usage
+}
+
 # Resolve Azure AD objects for each administrator UPN.
 data "azuread_user" "admins" {
   for_each            = toset(local.administrator_upns)

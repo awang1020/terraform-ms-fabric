@@ -18,6 +18,11 @@ tags = {
 # Enables schemas feature on created lakehouses (bool; default: true). Changes may force replacement.
 enable_schemas = true
 
+# Artefact name usage tokens (customize middle segment of <service>_<usage>_<workspace>)
+artifacts_dataflow_usage  = "ingestion"       # string; default: "ingest"
+artifacts_pipeline_usage  = "orchestration"  # string; default: "orchestrate"
+artifacts_notebook_usage  = "preparation"      # string; default: "explore"
+
 workspace_group_assignments = [                 # list(object), optional
   {
     # Provide either group_object_id or group_display_name

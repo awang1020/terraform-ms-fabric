@@ -34,3 +34,13 @@ output "dev_lakehouses" {
   value       = module.lakehouses_dev.lakehouses
   description = "Map of medallion layer to lakehouse {id, name} for the DEV workspace."
 }
+
+# Artifacts created in the DEV workspace (IDs and names)
+output "dev_artifacts" {
+  description = "Dataflow Gen2, Data Pipeline, and Notebook created in DEV with {id, name}."
+  value = {
+    dataflow = module.artifacts_dev.dataflow
+    pipeline = module.artifacts_dev.pipeline
+    notebook = module.artifacts_dev.notebook
+  }
+}
