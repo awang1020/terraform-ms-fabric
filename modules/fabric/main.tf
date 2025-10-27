@@ -80,11 +80,11 @@ locals {
 
   group_assignment_expanded = flatten([
     for a in var.workspace_group_assignments : [
-      for ws_name in (length(try(a.workspaces, [])) > 0 ? a.workspaces : local.all_workspace_names) : {
-        key            = "${ws_name}:${coalesce(try(a.group_display_name, null), try(a.group_object_id, null))}:${lower(a.role)}"
-        workspace_name = ws_name
-        role           = a.role
-        group_name     = try(a.group_display_name, null)
+      for ws_name in(length(try(a.workspaces, [])) > 0 ? a.workspaces : local.all_workspace_names) : {
+        key             = "${ws_name}:${coalesce(try(a.group_display_name, null), try(a.group_object_id, null))}:${lower(a.role)}"
+        workspace_name  = ws_name
+        role            = a.role
+        group_name      = try(a.group_display_name, null)
         group_object_id = try(a.group_object_id, null)
       }
     ]
@@ -104,7 +104,7 @@ locals {
 }
 
 resource "fabric_workspace_role_assignment" "groups" {
-  for_each    = local.group_assignment_map
+  for_each     = local.group_assignment_map
   workspace_id = each.value.workspace_id
   role         = each.value.role
   principal = {

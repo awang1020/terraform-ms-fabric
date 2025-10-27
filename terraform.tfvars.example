@@ -2,16 +2,32 @@
 # Replace the placeholder values with your environment specific details
 # before copying this file to terraform.tfvars (which is ignored by Git).
 
-client              = "acme"
-environment         = "dev"   # dev | test | prod
-location            = "francecentral"
-fabric_capacity_sku = "F2"
-subscription_id     = "00000000-0000-0000-0000-000000000000"
+client              = "acme"                              # string; naming prefix (lowercase, digits, hyphens)
+environment         = "dev"                               # string; one of: dev | test | prod
+location            = "francecentral"                     # string; Azure region (default: "francecentral")
+fabric_capacity_sku = "F2"                                 # string; Fabric capacity size (default: "F2")
+subscription_id     = "00000000-0000-0000-0000-000000000000" # string; Azure subscription ID
 
-workspace_group_assignments = [
-    {
-        group_object_id    = "groupeAD_ID"
-        role               = "Contributor"
-        workspaces         = ["workspace_name1", "workspace_name2"]
-    }
+# Optional: common tags applied to supported resources (map(string), default: {})
+tags = {
+  environment = "dev"
+  owner       = "data-team"
+}
+
+# Lakehouse configuration
+# Enables schemas feature on created lakehouses (bool; default: true). Changes may force replacement.
+enable_schemas = true
+
+workspace_group_assignments = [                 # list(object), optional
+  {
+    # Provide either group_object_id or group_display_name
+    group_object_id    = "groupeAD_ID"
+    # group_display_name = "AAD Group Name"
+
+    # Role within each workspace: Admin | Member | Contributor | Viewer
+    role               = "Contributor"
+
+    # Restrict to these workspaces by display name. Empty => all created workspaces.
+    workspaces         = ["acme-DEV", "acme-TEST"]
+  }
 ]

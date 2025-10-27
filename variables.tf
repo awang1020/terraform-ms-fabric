@@ -48,3 +48,15 @@ variable "workspace_group_assignments" {
   }))
   default = []
 }
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "Tags communs appliqués à la ressource"
+}
+
+variable "enable_schemas" {
+  description = "Whether to enable schemas feature on each lakehouse."
+  type        = bool
+  default     = true
+}

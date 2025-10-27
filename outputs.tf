@@ -28,3 +28,9 @@ output "resource_group" {
   }
   description = "Reference information for the hosting resource group."
 }
+
+# Lakehouses created in the DEV workspace (IDs and names)
+output "dev_lakehouses" {
+  value       = module.lakehouses_dev.lakehouses
+  description = "Map of medallion layer to lakehouse {id, name} for the DEV workspace."
+}

@@ -19,6 +19,7 @@ terraform {
 resource "azurerm_resource_group" "this" {
   name     = var.name
   location = var.location
+  tags     = var.tags
 }
 
 # Expose selected properties of the resource group to parent modules.

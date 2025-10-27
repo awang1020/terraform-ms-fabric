@@ -83,15 +83,56 @@ Ce dépôt fournit une configuration Terraform modulaire pour déployer rapideme
 └── .gitignore              # Fichiers exclus du contrôle de version
 ```
 
-## ⚙️ Configuration des variables
+## Variables (tfvars)
+- `client` (string, required)
+  - Purpose: naming prefix for resources (client/tenant).
+  - Allowed: lowercase letters, numbers, hyphens `[a-z0-9-]`.
+- `environment` (string, required)
+  - Purpose: deployment environment suffix.
+  - Values: `dev`, `test`, `prod`.
+- `location` (string, default `"francecentral"`)
+  - Purpose: Azure region for the deployment.
+- `fabric_capacity_sku` (string, default `"F2"`)
+  - Purpose: Microsoft Fabric capacity size (e.g., `F2`, `F4`, `F8`).
+- `subscription_id` (string, required)
+  - Purpose: Azure subscription ID used by providers.
+- `tags` (map(string), default `{}`)
+  - Purpose: common tags applied to supported resources (e.g., RG, capacity).
+  - Example: `{ environment = "dev", owner = "data-team" }`.
+- `enable_schemas` (bool, default `true`)
+  - Purpose: enable schemas on each created lakehouse.
+  - Note: changing this forces lakehouse replacement.
+- `workspace_group_assignments` (list(object), default `[]`)
+  - Purpose: assign AAD group roles to Fabric workspaces.
+  - Object: `{ group_object_id (opt), group_display_name (opt), role (string), workspaces (list(string), opt) }`.
+  - If `workspaces` is empty, applies to all created workspaces.
+
+Example tfvars
 Copiez `terraform.tfvars.example` vers `terraform.tfvars` et adaptez les valeurs :
 ```hcl
-name                = "my-fabric-demo"
-location            = "francecentral"
-fabric_capacity_sku = "F2"
-subscription_id     = "00000000-0000-0000-0000-000000000000"
+client              = "acme"                  # string, required
+environment         = "dev"                   # string: dev | test | prod
+location            = "francecentral"         # string, default "francecentral"
+fabric_capacity_sku = "F2"                     # string, default "F2"
+subscription_id     = "00000000-0000-0000-0000-000000000000" # string
+
+tags = {                                  # map(string), optional
+  environment = "dev"
+  owner       = "data-team"
+}
+
+enable_schemas = true                     # bool, default true
+
+workspace_group_assignments = [           # list(object), optional
+  {
+    group_object_id = "<aad-group-object-id>" # or use group_display_name
+    role            = "Contributor"           # Admin | Member | Contributor | Viewer
+    workspaces      = ["<workspace-name>"]    # empty -> applies to all created workspaces
+  }
+]
 ```
 > ⚠️ Ne versionnez jamais votre fichier `terraform.tfvars` contenant des identifiants réels.
+
 
 ## First-Time Apply Note
 - On the first deployment, the Fabric module reads the capacity via data source by display name, which fails until the capacity exists.
@@ -101,6 +142,32 @@ subscription_id     = "00000000-0000-0000-0000-000000000000"
   - `terraform plan -var-file="terraform.tfvars"`
   - `terraform apply -var-file="terraform.tfvars"`
 - This is only needed once per environment.
+
+## Lakehouses (DEV workspace)
+- The configuration now provisions three Lakehouses in the DEV workspace following the Medallion architecture: bronze, silver, gold.
+- Naming pattern: `lh_<layer>_<workspace_name_slug>` where the workspace name is adapted for Fabric constraints:
+  - Hyphens in the workspace name are converted to underscores (e.g. `renaud-DEV` -> `renaud_DEV`).
+  - Only letters, numbers, and underscores are kept.
+  - Examples: `lh_bronze_renaud_DEV`, `lh_silver_renaud_DEV`, `lh_gold_renaud_DEV`.
+- Outputs: `dev_lakehouses` returns a map keyed by layer with each lakehouse's `id` and `name`.
+- Customization: 
+  - Layers and name prefix are configurable in `modules/lakehouses` and via the call in `main.tf`.
+  - Schemas feature can be toggled with `enable_schemas` (default: `true`).
+
+### Enable Schemas
+- Lakehouses are created with schemas enabled by default: `enable_schemas = true`.
+- Changing `enable_schemas` forces replacement (destroy/create) of the lakehouses due to provider behavior.
+- Example module call in `main.tf`:
+  ```hcl
+  module "lakehouses_dev" {
+    source         = "./modules/lakehouses"
+    workspace_id   = module.fabric.workspaces[local.dev_workspace_key].id
+    workspace_name = local.dev_workspace_name
+    layers         = ["bronze", "silver", "gold"]
+    name_prefix    = "lh"
+    enable_schemas = true
+  }
+  ```
 
 
 ## 🚀 Commandes principales

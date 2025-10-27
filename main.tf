@@ -50,6 +50,7 @@ module "resource_group" {
   source   = "./modules/resource_group"
   name     = local.names.resource_group
   location = var.location
+  tags     = var.tags
 }
 
 # -----------------------------------------------------------------------------
@@ -66,6 +67,26 @@ module "fabric" {
   administrator_upns  = local.administrator_upns
   # Optional: assign groups to workspaces via terraform.tfvars
   workspace_group_assignments = var.workspace_group_assignments
+  #Optional: add tags
+  tags = var.tags
+}
+
+# -----------------------------------------------------------------------------
+# Create three Lakehouses inside the DEV workspace following Medallion naming
+# Pattern: lh_<layer>_<workspace_name>
+# -----------------------------------------------------------------------------
+locals {
+  dev_workspace_key  = "${local.client_slug}-DEV"
+  dev_workspace_name = local.dev_workspace_key
+}
+
+module "lakehouses_dev" {
+  source         = "./modules/lakehouses"
+  workspace_id   = module.fabric.workspaces[local.dev_workspace_key].id
+  workspace_name = local.dev_workspace_name
+  layers         = ["bronze", "silver", "gold"]
+  name_prefix    = "lh"
+  enable_schemas = var.enable_schemas
 }
 
 # Resolve Azure AD objects for each administrator UPN.
