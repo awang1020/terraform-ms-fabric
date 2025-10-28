@@ -6,6 +6,7 @@ Provision a complete Microsoft Fabric foundation on Azure using Terraform. The s
 - Resource group in your chosen Azure region
 - Microsoft Fabric capacity (configurable SKU)
 - Three Fabric workspaces on the same capacity: DEV, TEST, PROD
+- Fabric Deployment Pipeline linking DEV -> TEST -> PROD
 - DEV lakehouses (bronze, silver, gold) with optional schemas
 - DEV artifacts: Dataflow Gen2, Data Pipeline, Notebook
 
@@ -33,7 +34,9 @@ Provision a complete Microsoft Fabric foundation on Azure using Terraform. The s
 │   ├── fabric/                  # Fabric capacity + workspaces (+ group roles)
 │   ├── lakehouses/              # DEV lakehouses (bronze/silver/gold)
 │   └── artifacts/               # DEV Dataflow Gen2, Pipeline, Notebook
+│   └── deployment_pipeline/     # Fabric Deployment Pipeline (DEV -> TEST -> PROD)
 ```
+
 
 ## Quick Start
 1) Authenticate and select subscription
@@ -110,6 +113,8 @@ terraform apply  -var-file="terraform.tfvars"
   - Usage token for Data Pipeline naming (pattern: `pl_<usage>_<workspace>`).
 - `artifacts_notebook_usage` (string, default `"explore"`)
   - Usage token for Notebook naming (pattern: `nb_<usage>_<workspace>`).
+- `deployment_pipeline_role_assignments` (list(object), default `[]`)
+  - Assign Azure AD principals to the Fabric Deployment Pipeline. Only role `Admin` is supported. For groups, provide `group_object_id` or `group_display_name`; for users, provide `user_object_id` or `user_principal_name`.
 
 Example `terraform.tfvars` snippet:
 ```hcl
@@ -155,6 +160,35 @@ Note: Do not commit your `terraform.tfvars` with real identifiers.
   - Notebook: `nb_<usage>_<workspace>` (usage from `artifacts_notebook_usage`)
 - Output: `dev_artifacts` returns `{ dataflow = {id,name}, pipeline = {id,name}, notebook = {id,name} }`.
 - Extend by duplicating the module under `modules/artifacts` and adjusting usage tokens or adding additional artifacts.
+
+## Deployment Pipeline
+- Creates a Microsoft Fabric Deployment Pipeline that connects the three workspaces as stages: Development -> Test -> Production.
+- Name pattern: `<client>-fabric-deployment-pipeline`.
+- Stages map to the workspaces created by this stack:
+  - Development: `<client>-DEV`
+  - Test: `<client>-TEST`
+  - Production: `<client>-PROD`
+- Role assignments: supports Azure AD Group/User principals; only `Admin` is valid for deployment pipelines. Configure via `deployment_pipeline_role_assignments`.
+- Outputs:
+  - `deployment_pipeline.id` and `deployment_pipeline.name`
+  - `deployment_pipeline.role_assignments` map with `id`, `role`, `principal_id`, `principal_type`
+
+Example `terraform.tfvars` snippet:
+```hcl
+# Grant Admin on the Deployment Pipeline to a platform group and a user
+deployment_pipeline_role_assignments = [
+  {
+    role               = "Admin"
+    principal_type     = "Group"           # Group or User
+    group_object_id    = "<aad-group-object-id>" # or use group_display_name
+  },
+  {
+    role                 = "Admin"
+    principal_type       = "User"
+    user_principal_name  = "john.doe@contoso.com" # or use user_object_id
+  }
+]
+```
 
 ## Terraform Commands
 ```
