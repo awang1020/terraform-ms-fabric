@@ -36,6 +36,7 @@ locals {
     resource_group = "${local.client_slug}-fabric-rg-${local.env_slug}"
     capacity       = local.capacity_name
     workspace      = "${local.client_slug}-fabric-workspace-${local.env_slug}"
+    deployment_pipeline = "${local.client_slug}-fabric-deployment-pipeline"
   }
 
   administrator_upns = [
@@ -106,6 +107,25 @@ module "artifacts_dev" {
   dataflow_usage = var.artifacts_dataflow_usage
   pipeline_usage = var.artifacts_pipeline_usage
   notebook_usage = var.artifacts_notebook_usage
+}
+
+# -----------------------------------------------------------------------------
+# Fabric Deployment Pipeline linking DEV, TEST, PROD workspaces
+# -----------------------------------------------------------------------------
+locals {
+  test_workspace_key  = "${local.client_slug}-TEST"
+  prod_workspace_key  = "${local.client_slug}-PROD"
+}
+
+module "deployment_pipeline" {
+  source          = "./modules/deployment_pipeline"
+  name            = local.names.deployment_pipeline
+
+  dev_workspace_id  = module.fabric.workspaces[local.dev_workspace_key].id
+  test_workspace_id = module.fabric.workspaces[local.test_workspace_key].id
+  prod_workspace_id = module.fabric.workspaces[local.prod_workspace_key].id
+
+  pipeline_role_assignments = var.deployment_pipeline_role_assignments
 }
 
 # Resolve Azure AD objects for each administrator UPN.

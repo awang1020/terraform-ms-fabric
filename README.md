@@ -61,6 +61,32 @@ terraform plan   -var-file="terraform.tfvars"
 terraform apply  -var-file="terraform.tfvars"
 ```
 
+### First-Time Apply Scenarios
+- Terraform creates RG and Capacity (default)
+  - Use the targeted applies above once, then run plan/apply normally.
+- You already created the Resource Group and/or Capacity
+  - Ensure names in this repo match your existing assets. By default, names are derived in `terraform-ms-fabric/main.tf` as:
+    - Resource group: `<client>-fabric-rg-<environment>`
+    - Capacity display name: computed from `<client>` and `<environment>`
+  - If your names differ, update the `names` locals in `terraform-ms-fabric/main.tf` or adjust `client`/`environment` inputs to match.
+  - Import existing resources into Terraform state, then plan/apply:
+    ```bash
+    # Import the existing Resource Group
+    terraform import \
+      module.resource_group.azurerm_resource_group.this \
+      "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RG_NAME>"
+
+    # Import the existing Fabric Capacity
+    terraform import \
+      module.fabric.azurerm_fabric_capacity.this \
+      "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RG_NAME>/providers/Microsoft.Fabric/capacities/<CAPACITY_NAME>"
+
+    # Then proceed normally
+    terraform plan  -var-file="terraform.tfvars"
+    terraform apply -var-file="terraform.tfvars"
+    ```
+  - If only the Resource Group exists (no Capacity yet): skip the RG targeted apply and run only the Capacity targeted apply once.
+
 ## Configuration (Inputs)
 - `client` (string, required)
   - Naming prefix for resources (client/tenant). Allowed: lowercase letters, numbers, hyphens `[a-z0-9-]`.
@@ -150,4 +176,3 @@ terraform destroy    # Destroy the stack
 - Microsoft Fabric Terraform Provider: https://registry.terraform.io/providers/microsoft/fabric/latest/docs
 - AzureRM Provider: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs
 - Terraform on Azure: https://learn.microsoft.com/azure/developer/terraform/
-

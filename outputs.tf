@@ -44,3 +44,17 @@ output "dev_artifacts" {
     notebook = module.artifacts_dev.notebook
   }
 }
+
+# Fabric Deployment Pipeline output
+output "deployment_pipeline" {
+  description = "Fabric Deployment Pipeline {id, name}."
+  value = {
+    id   = module.deployment_pipeline.id
+    name = module.deployment_pipeline.name
+  }
+}
+
+output "deployment_pipeline_role_assignments" {
+  description = "Map of pipeline role assignments keyed by composite key, with {id, role, principal_id, principal_type}."
+  value       = module.deployment_pipeline.role_assignments
+}

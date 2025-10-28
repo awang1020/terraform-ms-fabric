@@ -36,3 +36,24 @@ workspace_group_assignments = [                 # list(object), optional
     workspaces         = ["customer-DEV", "customer-TEST"]
   }
 ]
+
+# Deployment Pipeline role assignments (optional)
+# Assign roles on the Fabric Deployment Pipeline to AAD groups or users.
+# Provide either:
+#   - For groups: group_object_id OR group_display_name
+#   - For users:  user_object_id  OR user_principal_name
+# Only role supported on deployment pipeline is: Admin
+deployment_pipeline_role_assignments = [
+  # Example: assign Admin to a platform group by display name
+  {
+    role               = "Admin"
+    principal_type     = "Group"           # "Group" or "User"
+    group_object_id    = "groupeAD_ID"
+  },
+  # Example: assign Contributor to a specific user by UPN
+  {
+    role                 = "Admin"
+    principal_type       = "User"
+    user_principal_name  = "john.doe@contoso.com"
+  }
+]

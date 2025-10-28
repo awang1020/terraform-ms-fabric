@@ -42,5 +42,6 @@ provider "azuread" {
 }
 
 provider "fabric" {
-  # Configuration options
+  # Enable preview features required for deployment pipelines
+  preview = true
 }
