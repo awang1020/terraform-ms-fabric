@@ -18,7 +18,7 @@ Provision a complete Microsoft Fabric foundation on Azure using Terraform. The s
 
 Below is the Terraform Microsoft Fabric architecture:
 
-![Terraform Microsoft Fabric Architecture](docs/fabric_architecture.png)
+![Terraform Microsoft Fabric Architecture](docs/fabric_architecture_terraform.png)
 
 
 ## Prerequisites
