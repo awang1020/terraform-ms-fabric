@@ -14,6 +14,13 @@ Provision a complete Microsoft Fabric foundation on Azure using Terraform. The s
 - Data/Platform engineers bootstrapping Fabric environments quickly
 - Teams standardizing naming, governance, and repeatable provisioning
 
+## Architecture Overview
+
+Below is the Terraform Microsoft Fabric architecture:
+
+![Terraform Microsoft Fabric Architecture](docs/fabric_architecture.png)
+
+
 ## Prerequisites
 - Terraform >= 1.8
 - Azure CLI installed and authenticated with sufficient permissions
