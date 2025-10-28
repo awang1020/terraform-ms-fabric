@@ -2,7 +2,7 @@
 # Replace the placeholder values with your environment specific details
 # before copying this file to terraform.tfvars (which is ignored by Git).
 
-client              = "acme"                              # string; naming prefix (lowercase, digits, hyphens)
+client              = "customer"                              # string; naming prefix (lowercase, digits, hyphens)
 environment         = "dev"                               # string; one of: dev | test | prod
 location            = "francecentral"                     # string; Azure region (default: "francecentral")
 fabric_capacity_sku = "F2"                                 # string; Fabric capacity size (default: "F2")
@@ -33,6 +33,6 @@ workspace_group_assignments = [                 # list(object), optional
     role               = "Contributor"
 
     # Restrict to these workspaces by display name. Empty => all created workspaces.
-    workspaces         = ["acme-DEV", "acme-TEST"]
+    workspaces         = ["customer-DEV", "customer-TEST"]
   }
 ]
