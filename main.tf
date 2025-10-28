@@ -134,18 +134,18 @@ data "azuread_user" "admins" {
   user_principal_name = each.value
 }
 
-# Assign Owner role on the Fabric Capacity to administrators.
+# Assign Contributor on the Fabric Capacity to administrators (least privilege).
 resource "azurerm_role_assignment" "capacity_admins" {
   for_each             = data.azuread_user.admins
   scope                = module.fabric.capacity.id
-  role_definition_name = "Owner"
+  role_definition_name = "Contributor"
   principal_id         = each.value.object_id
 }
 
-# Assign Owner on the Resource Group to administrators (optional but useful).
+# Assign Contributor on the Resource Group to administrators (optional but useful).
 resource "azurerm_role_assignment" "rg_admins" {
   for_each             = data.azuread_user.admins
   scope                = module.resource_group.id
-  role_definition_name = "Owner"
+  role_definition_name = "Contributor"
   principal_id         = each.value.object_id
 }

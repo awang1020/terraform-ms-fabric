@@ -26,7 +26,7 @@ variable "prod_workspace_id" {
 }
 
 variable "pipeline_role_assignments" {
-  description = "List of AAD role assignments for the deployment pipeline. Only role 'Admin' is supported. Provide either group_object_id or group_display_name for groups, or user_object_id or user_principal_name for users."
+  description = "List of AAD role assignments for the deployment pipeline. Only role 'Admin' is supported. Prefer object IDs (group_object_id, user_object_id). Display-name/UPN lookup is discouraged and may be removed in a future version."
   type = list(object({
     role                = string              # Only 'Admin' is supported for deployment pipelines
     principal_type      = string              # "Group", "User", "ServicePrincipal", "ServicePrincipalProfile"

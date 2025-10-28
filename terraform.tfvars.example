@@ -25,9 +25,9 @@ artifacts_notebook_usage  = "preparation"      # string; default: "explore"
 
 workspace_group_assignments = [                 # list(object), optional
   {
-    # Provide either group_object_id or group_display_name
-    group_object_id    = "groupeAD_ID"
-    # group_display_name = "AAD Group Name"
+    # Prefer object IDs (discouraged: display name lookup)
+    group_object_id    = "<aad-group-object-id>"
+    # group_display_name = "<AAD Group Name>"
 
     # Role within each workspace: Admin | Member | Contributor | Viewer
     role               = "Contributor"
@@ -39,21 +39,21 @@ workspace_group_assignments = [                 # list(object), optional
 
 # Deployment Pipeline role assignments (optional)
 # Assign roles on the Fabric Deployment Pipeline to AAD groups or users.
-# Provide either:
-#   - For groups: group_object_id OR group_display_name
-#   - For users:  user_object_id  OR user_principal_name
+# Prefer object IDs for principals:
+#   - For groups: group_object_id (discouraged: group_display_name)
+#   - For users:  user_object_id  (discouraged: user_principal_name)
 # Only role supported on deployment pipeline is: Admin
 deployment_pipeline_role_assignments = [
-  # Example: assign Admin to a platform group by display name
+  # Example: assign Admin to a platform group by object ID
   {
     role               = "Admin"
     principal_type     = "Group"           # "Group" or "User"
-    group_object_id    = "groupeAD_ID"
+    group_object_id    = "<aad-group-object-id>"
   },
-  # Example: assign Contributor to a specific user by UPN
+  # Example: assign Admin to a specific user by object ID
   {
     role                 = "Admin"
     principal_type       = "User"
-    user_principal_name  = "john.doe@contoso.com"
+    user_object_id       = "<aad-user-object-id>"
   }
 ]

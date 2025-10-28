@@ -23,16 +23,12 @@ Below is the Terraform Microsoft Fabric architecture:
 
 ## Prerequisites
 - Terraform >= 1.8
+- Active Azure subscription with sufficient permissions (Contributor or Owner)
 - Azure CLI installed and authenticated with sufficient permissions
   - Install: https://learn.microsoft.com/cli/azure/install-azure-cli
   - Sign in: `az login` (or `az login --use-device-code`)
 - Providers used: `hashicorp/azurerm`, `Azure/azapi`, `hashicorp/azuread`, `microsoft/fabric`
 
-## Azure Subscription Management
-- List available subscriptions (helpful when choosing the `subscription_id`):
-  ```bash
-  az account list --query "[].{Name:name, Id:id, IsDefault:isDefault}" -o table
-  ```
 
 ## Repository Structure
 ```
@@ -56,6 +52,8 @@ Below is the Terraform Microsoft Fabric architecture:
 ```
 az login
 az account set --subscription "<SUBSCRIPTION_ID>"
+# List available subscriptions (helpful when choosing the `subscription_id`):
+az account list --query "[].{Name:name, Id:id, IsDefault:isDefault}" -o table
 ```
 
 2) Configure inputs by copying the example
@@ -198,12 +196,12 @@ deployment_pipeline_role_assignments = [
   {
     role               = "Admin"
     principal_type     = "Group"           # Group or User
-    group_object_id    = "<aad-group-object-id>" # or use group_display_name
+    group_object_id    = "<aad-group-object-id>" # prefer object ID (discouraged: group_display_name)
   },
   {
     role                 = "Admin"
     principal_type       = "User"
-    user_principal_name  = "john.doe@contoso.com" # or use user_object_id
+    user_principal_name  = "john.doe@contoso.com" # prefer user_object_id; UPN lookup is mutable
   }
 ]
 ```

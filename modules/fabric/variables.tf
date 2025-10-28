@@ -47,7 +47,7 @@ variable "tags" {
 
 # Optional group role assignments to workspaces
 variable "workspace_group_assignments" {
-  description = "List of Azure AD group role assignments across Fabric workspaces. If workspaces is empty or omitted, applies to all created workspaces. Provide either group_object_id or group_display_name."
+  description = "List of Azure AD group role assignments across Fabric workspaces. If workspaces is empty or omitted, applies to all created workspaces. Prefer group_object_id; group_display_name lookup is discouraged and may be removed in a future version."
   type = list(object({
     group_object_id    = optional(string)
     group_display_name = optional(string)
