@@ -28,6 +28,12 @@ Below is the Terraform Microsoft Fabric architecture:
   - Sign in: `az login` (or `az login --use-device-code`)
 - Providers used: `hashicorp/azurerm`, `Azure/azapi`, `hashicorp/azuread`, `microsoft/fabric`
 
+## Azure Subscription Management
+- List available subscriptions (helpful when choosing the `subscription_id`):
+  ```bash
+  az account list --query "[].{Name:name, Id:id, IsDefault:isDefault}" -o table
+  ```
+
 ## Repository Structure
 ```
 .
@@ -63,7 +69,9 @@ cp terraform.tfvars.example terraform.tfvars
 terraform init
 
 # First-time apply (capacity data source depends on capacity creation)
+# 1) Creates the Azure Resource Group
 terraform apply -auto-approve -var-file="terraform.tfvars" -target module.resource_group.azurerm_resource_group.this
+# 2) Creates the Microsoft Fabric Capacity
 terraform apply -auto-approve -var-file="terraform.tfvars" -target module.fabric.azurerm_fabric_capacity.this
 
 # Then proceed normally
@@ -140,7 +148,7 @@ enable_schemas = true
 
 workspace_group_assignments = [
   {
-    group_object_id = "<aad-group-object-id>" # or use group_display_name
+    group_object_id = "<aad-group-object-id>"
     role            = "Contributor"           # Admin | Member | Contributor | Viewer
     workspaces      = ["<workspace-name>"]    # empty -> applies to all created workspaces
   }
@@ -152,6 +160,9 @@ artifacts_notebook_usage  = "explore"
 ```
 
 Note: Do not commit your `terraform.tfvars` with real identifiers.
+
+### Naming Note
+- If the `client` variable changes after an initial apply, the derived workspace names change as well. You must update the existing Fabric workspace names to match the new `client` value (or destroy/recreate or import state accordingly) to avoid drift and naming conflicts.
 
 ## Lakehouses (DEV)
 - Provisions three lakehouses in DEV following Medallion architecture: `bronze`, `silver`, `gold`.
