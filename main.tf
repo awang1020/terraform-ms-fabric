@@ -37,6 +37,10 @@ locals {
     capacity       = local.capacity_name
     workspace      = "${local.client_slug}-fabric-workspace-${local.env_slug}"
     deployment_pipeline = "${local.client_slug}-fabric-deployment-pipeline"
+    shortcut = "${local.client_slug}-fabric-shortcut-${local.env_slug}"
+    storage_account_name = "fabingesdata23422" //variabilize later
+    container_name       = "orders" //variabilize later
+    shortcut_name         =  "orders" //variabilize later
   }
 
   administrator_upns = [
@@ -148,4 +152,21 @@ resource "azurerm_role_assignment" "rg_admins" {
   scope                = module.resource_group.id
   role_definition_name = "Contributor"
   principal_id         = each.value.object_id
+}
+
+module "shortcut_dev" {
+  source = "./modules/shortcut"
+  resource_group_name                  = local.names.resource_group
+  resource_group_location              = var.location
+
+  storage_account_name   = local.names.storage_account_name
+  container_name         = local.names.container_name
+  workspace_id           = module.fabric.workspaces[local.dev_workspace_key].id
+  lakehouse_id           = module.lakehouses_dev.lakehouses["bronze"].id
+  shortcut_name         =  local.names.shortcut_name
+
+  depends_on = [
+    module.lakehouses_dev,
+    module.resource_group
+  ]
 }

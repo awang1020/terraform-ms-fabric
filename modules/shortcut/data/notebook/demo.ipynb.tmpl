@@ -1,0 +1,326 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Sales order data exploration\n",
+        "Use this notebook to explore sales order data\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df = spark.read.format(\"csv\").option(\"header\", \"true\").load(\"Files/orders/2019.csv\")\n",
+        "display(df)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": ["## Import CSV – problème de headers"]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df = spark.read.format(\"csv\").option(\"header\", \"false\").load(\"Files/orders/2019.csv\")\n",
+        "display(df)"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["## Définir les noms de colonnes avec un schéma"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "from pyspark.sql.types import *\n",
+        "\n",
+        "orderSchema = StructType([\n",
+        "    StructField(\"SalesOrderNumber\", StringType()),\n",
+        "    StructField(\"SalesOrderLineNumber\", IntegerType()),\n",
+        "    StructField(\"OrderDate\", DateType()),\n",
+        "    StructField(\"CustomerName\", StringType()),\n",
+        "    StructField(\"Email\", StringType()),\n",
+        "    StructField(\"Item\", StringType()),\n",
+        "    StructField(\"Quantity\", IntegerType()),\n",
+        "    StructField(\"UnitPrice\", FloatType()),\n",
+        "    StructField(\"Tax\", FloatType())\n",
+        "])\n",
+        "\n",
+        "df = spark.read.format(\"csv\").schema(orderSchema).load(\"Files/orders/2019.csv\")\n",
+        "display(df)"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["## Import multi-fichiers"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "df = spark.read.format(\"csv\").schema(orderSchema).load(\"Files/orders/*.csv\")\n",
+        "display(df)"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["## Exploration – clients"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "customers = df.select(\"CustomerName\", \"Email\")\n",
+        "\n",
+        "print(customers.count())\n",
+        "print(customers.distinct().count())\n",
+        "display(customers.distinct())"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["## Clients ayant acheté un produit spécifique"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "customers = df.select(\"CustomerName\", \"Email\") \\\n",
+        "               .where(df['Item'] == 'Road-250 Red, 52')\n",
+        "\n",
+        "print(customers.count())\n",
+        "print(customers.distinct().count())\n",
+        "display(customers.distinct())"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["## Agrégation – total ventes par produit"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "productSales = df.select(\"Item\", \"Quantity\").groupBy(\"Item\").sum()\n",
+        "display(productSales)"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["## Nombre de ventes par année"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "from pyspark.sql.functions import *\n",
+        "\n",
+        "yearlySales = df.select(year(col(\"OrderDate\")).alias(\"Year\")) \\\n",
+        "                .groupBy(\"Year\").count().orderBy(\"Year\")\n",
+        "display(yearlySales)"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["# Transformations – ajouter Year, Month, FirstName, LastName"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "transformed_df = df.withColumn(\"Year\", year(col(\"OrderDate\"))) \\\n",
+        "    .withColumn(\"Month\", month(col(\"OrderDate\"))) \\\n",
+        "    .withColumn(\"FirstName\", split(col(\"CustomerName\"), \" \").getItem(0)) \\\n",
+        "    .withColumn(\"LastName\", split(col(\"CustomerName\"), \" \").getItem(1))\n",
+        "\n",
+        "transformed_df = transformed_df[\n",
+        "    \"SalesOrderNumber\", \"SalesOrderLineNumber\", \"OrderDate\",\n",
+        "    \"Year\", \"Month\", \"FirstName\", \"LastName\", \"Email\",\n",
+        "    \"Item\", \"Quantity\", \"UnitPrice\", \"Tax\"\n",
+        "]\n",
+        "\n",
+        "display(transformed_df.limit(5))"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["## Sauvegarde en Parquet"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "transformed_df.write.mode(\"overwrite\").parquet('Files/transformed_data/orders')\n",
+        "print(\"Transformed data saved!\")"
+      ]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "orders_df = spark.read.format(\"parquet\") \\\n",
+        "                     .load(\"Files/transformed_data/orders\")\n",
+        "display(orders_df)"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["# SQL – création de table Delta"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "df.write.format(\"delta\").saveAsTable(\"salesorders\")\n",
+        "spark.sql(\"DESCRIBE EXTENDED salesorders\").show(truncate=False)"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["## Select depuis un autre Lakehouse"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "df = spark.sql(\"SELECT * FROM lh_bronze_customer_DEV.dbo.salesorders LIMIT 1000\")\n",
+        "display(df)"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["# Visualisation – SQL + Matplotlib + Seaborn"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "sqlQuery = \"\"\"\n",
+        "SELECT CAST(YEAR(OrderDate) AS CHAR(4)) AS OrderYear,\n",
+        "       SUM((UnitPrice * Quantity) + Tax) AS GrossRevenue,\n",
+        "       COUNT(DISTINCT SalesOrderNumber) AS YearlyCounts\n",
+        "FROM salesorders\n",
+        "GROUP BY CAST(YEAR(OrderDate) AS CHAR(4))\n",
+        "ORDER BY OrderYear\n",
+        "\"\"\"\n",
+        "\n",
+        "df_spark = spark.sql(sqlQuery)\n",
+        "df_spark.show()"
+      ]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "from matplotlib import pyplot as plt\n",
+        "df_sales = df_spark.toPandas()\n",
+        "\n",
+        "plt.bar(df_sales['OrderYear'], df_sales['GrossRevenue'])\n",
+        "plt.show()"
+      ]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "plt.clf()\n",
+        "plt.bar(df_sales['OrderYear'], df_sales['GrossRevenue'], color='orange')\n",
+        "plt.title('Revenue by Year')\n",
+        "plt.xlabel('Year')\n",
+        "plt.ylabel('Revenue')\n",
+        "plt.grid(axis='y', linestyle='--', alpha=0.7)\n",
+        "plt.xticks(rotation=45)\n",
+        "plt.show()"
+      ]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "plt.clf()\n",
+        "fig = plt.figure(figsize=(8,3))\n",
+        "plt.bar(df_sales['OrderYear'], df_sales['GrossRevenue'], color='orange')\n",
+        "plt.title('Revenue by Year')\n",
+        "plt.xlabel('Year')\n",
+        "plt.ylabel('Revenue')\n",
+        "plt.grid(axis='y', linestyle='--', alpha=0.7)\n",
+        "plt.xticks(rotation=45)\n",
+        "plt.show()"
+      ]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "plt.clf()\n",
+        "fig, ax = plt.subplots(1, 2, figsize=(10,4))\n",
+        "\n",
+        "ax[0].bar(df_sales['OrderYear'], df_sales['GrossRevenue'], color='orange')\n",
+        "ax[0].set_title('Revenue by Year')\n",
+        "\n",
+        "ax[1].pie(df_sales['YearlyCounts'])\n",
+        "ax[1].set_title('Orders per Year')\n",
+        "ax[1].legend(df_sales['OrderYear'])\n",
+        "\n",
+        "fig.suptitle('Sales Data')\n",
+        "plt.show()"
+      ]
+    },
+
+    {
+      "cell_type": "markdown",
+      "source": ["# Seaborn"]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "import seaborn as sns\n",
+        "plt.clf()\n",
+        "sns.barplot(x=\"OrderYear\", y=\"GrossRevenue\", data=df_sales)\n",
+        "plt.show()"
+      ]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "plt.clf()\n",
+        "sns.set_theme(style=\"whitegrid\")\n",
+        "sns.barplot(x=\"OrderYear\", y=\"GrossRevenue\", data=df_sales)\n",
+        "plt.show()"
+      ]
+    },
+
+    {
+      "cell_type": "code",
+      "source": [
+        "plt.clf()\n",
+        "sns.lineplot(x=\"OrderYear\", y=\"GrossRevenue\", data=df_sales)\n",
+        "plt.show()"
+      ]
+    }
+  ],
+
+  "metadata": {
+    "kernelspec": {
+      "display_name": "synapse_pyspark",
+      "name": "synapse_pyspark"
+    }
+  },
+
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
