@@ -48,4 +48,7 @@ variable "notebook_name" {
   default = "terraform Demo"
 }
 
-
+variable "client_slug" {
+  description = "Client slug for naming conventions"
+  type        = string
+}

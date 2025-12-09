@@ -87,6 +87,7 @@ locals {
         group_name      = try(a.group_display_name, null)
         group_object_id = try(a.group_object_id, null)
       }
+      if contains(keys(fabric_workspace.this), ws_name)
     ]
   ])
 

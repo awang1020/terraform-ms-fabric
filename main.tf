@@ -38,7 +38,7 @@ locals {
     workspace      = "${local.client_slug}-fabric-workspace-${local.env_slug}"
     deployment_pipeline = "${local.client_slug}-fabric-deployment-pipeline"
     shortcut = "${local.client_slug}-fabric-shortcut-${local.env_slug}"
-    storage_account_name = "fabingesdata23422" //variabilize later
+    storage_account_name = "sa${replace(local.client_slug, "-", "")}${replace(local.env_slug, "-", "")}"
     container_name       = "orders" //variabilize later
     shortcut_name         =  "orders" //variabilize later
   }
@@ -163,7 +163,8 @@ module "shortcut_dev" {
   container_name         = local.names.container_name
   workspace_id           = module.fabric.workspaces[local.dev_workspace_key].id
   lakehouse_id           = module.lakehouses_dev.lakehouses["bronze"].id
-  shortcut_name         =  local.names.shortcut_name
+  shortcut_name          = local.names.shortcut_name
+  client_slug            = local.client_slug
 
   depends_on = [
     module.lakehouses_dev,

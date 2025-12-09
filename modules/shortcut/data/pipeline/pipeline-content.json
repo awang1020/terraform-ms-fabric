@@ -1,5 +1,5 @@
 {
-    "name": "terraform test 7",
+    "name": "terraform  test 7",
     "properties": {
         "activities": [
             {
@@ -15,15 +15,7 @@
                 },
                 "typeProperties": {
                     "source": {
-                        "type": "DelimitedTextSource",
-                        "storeSettings": {
-                            "type": "LakehouseReadSettings",
-                            "recursive": true,
-                            "enablePartitionDiscovery": false
-                        },
-                        "formatSettings": {
-                            "type": "DelimitedTextReadSettings"
-                        },
+                        "type": "LakehouseTableSource",
                         "datasetSettings": {
                             "annotations": [],
                             "connectionSettings": {
@@ -34,26 +26,19 @@
                                     "typeProperties": {
                                         "workspaceId": "{{.workspaceId}}",
                                         "artifactId": "{{.artifactId}}",
-                                        "rootFolder": "Files"
+                                        "rootFolder": "Tables"
                                     },
                                     "externalReferences": {
                                         "connection": "{{.connection}}"
                                     }
                                 }
                             },
-                            "type": "DelimitedText",
+                            "type": "LakehouseTable",
+                            "schema": [],
                             "typeProperties": {
-                                "location": {
-                                    "type": "LakehouseLocation",
-                                    "fileName": "{{.blobName}}",
-                                    "folderPath": "{{.containerName}}"
-                                },
-                                "columnDelimiter": ",",
-                                "escapeChar": "\\",
-                                "firstRowAsHeader": true,
-                                "quoteChar": "\""
-                            },
-                            "schema": []
+                                "schema": "dbo",
+                                "table": "salesorders"
+                            }
                         }
                     },
                     "sink": {
@@ -69,9 +54,9 @@
                                     "annotations": [],
                                     "type": "Lakehouse",
                                     "typeProperties": {
-                                        "workspaceId": "{{.workspaceId}}",
                                         "artifactId": "{{.artifactId}}",
-                                        "rootFolder": "Tables"
+                                        "rootFolder": "Tables",
+                                        "workspaceId": "{{.workspaceId}}"
                                     },
                                     "externalReferences": {
                                         "connection": "{{.connection}}"

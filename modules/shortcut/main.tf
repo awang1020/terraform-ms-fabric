@@ -80,35 +80,38 @@ resource "azurerm_storage_blob" "order_files" {
   source                 = "${path.module}/data/orders/${each.value}"
 }
 
-resource "fabric_data_pipeline" "example7" {
-  display_name = "terraform  test 7"
+
+
+resource "fabric_data_pipeline" "terraformpipeline2" {
+  display_name = "terraform pipeline 2"
   workspace_id              = var.workspace_id
   definition_update_enabled = false
   format = "Default"
   definition = {
     "pipeline-content.json" = {
-      source = "${path.module}/data/pipeline/pipeline-content.json"
+      source = "${path.module}/data/pipeline/2.json"
       tokens = {
-        "connectionName" = "lh_bronze_customer_DEV"
+        "connectionName" = "lh_bronze_${var.client_slug}_DEV"
         "workspaceId" = var.workspace_id
-        "artifactId"  = "bea92c0a-46b8-4e14-92ed-f66b5b7839ac"
+        "artifactId"  =  "8195cec4-899b-4f71-a3e9-f56ee0d8cb0a"
         "connection"  = "9a56af28-8c7f-4f37-a31c-ed4eb26fb3b2"
-        "tableName"      = "xxx"
+        "tableName"      = "salesorders2"
         "blobName"      = "2019.csv"
         "containerName" = "orders"
       }
     }
   }
 }
+
 # Retrieve the storage account details
-data "azurerm_storage_account" "this" {
-  name                = var.storage_account_name
-  resource_group_name = var.resource_group_name
+# Using the storage account created in this module
+locals {
+  storage_account = azurerm_storage_account.this
 }
 
 # Create a Fabric connection to the Azure Storage account
 resource "fabric_connection" "storage_account_key" {
-  display_name      = "my-storage-connection"
+  display_name      = "${var.storage_account_name}-connection"
   connectivity_type = "ShareableCloud"
   privacy_level     = "Organizational"
 
@@ -136,7 +139,7 @@ resource "fabric_connection" "storage_account_key" {
     skip_test_connection  = false
 
     key_credentials = {
-      key_wo         = data.azurerm_storage_account.this.primary_access_key
+      key_wo         = local.storage_account.primary_access_key
       key_wo_version = 1                               # Version du secret
     }
   }
