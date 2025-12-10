@@ -89,7 +89,7 @@ resource "fabric_data_pipeline" "terraformpipeline2" {
   format = "Default"
   definition = {
     "pipeline-content.json" = {
-      source = "${path.module}/data/pipeline/2.json"
+      source = "${path.module}/data/pipeline/pipeline-content.json"
       tokens = {
         "connectionName" = "lh_bronze_${var.client_slug}_DEV"
         "workspaceId" = var.workspace_id
